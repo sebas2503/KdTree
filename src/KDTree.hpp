@@ -42,11 +42,15 @@ class KDTree
 
   bool contains(const Point<N> &pt) const;
     
-  //bool find(KdNode<N,ElemType> **&,const Point<N>);
+  void borrado(KdNode<N,ElemType>*);
+    
+  void insertar(KdNode<N,ElemType>*);
     
   bool find(KdNode<N,ElemType> **&,const Point<N>) const;
     
   void insert(const Point<N> &pt, const ElemType &value);
+    
+  void CompararTodos(KdNode<N,ElemType>*,std::vector<std::pair<double,ElemType>>&x,const Point<N> &key) const;
 
   ElemType &operator[](const Point<N> &pt);
 
@@ -74,13 +78,31 @@ KDTree<N, ElemType>::KDTree()
 template <size_t N, typename ElemType>
 KDTree<N, ElemType>::~KDTree()
 {
-  // TODO(me): Fill this in.
+    borrado(root);
+    root  = 0;
 }
 
+template<size_t N,typename ElemType>
+void KDTree<N,ElemType>::borrado(KdNode<N,ElemType>*p)
+{
+    if (!p) return;
+    borrado(p->hijos[0]);
+    borrado(p->hijos[1]);
+    delete p;
+}
+
+template<size_t N,typename ElemType>
+void KDTree<N,ElemType>::insertar(KdNode<N,ElemType>*p)
+{
+    if(!p) return;
+    insert(p->punto,p->valor);
+    insertar(p->hijos[0]);
+    insertar(p->hijos[1]);
+}
 template <size_t N, typename ElemType>
 KDTree<N, ElemType>::KDTree(const KDTree &rhs)
 {
-    root = nullptr;
+    insertar(rhs.root);
     size_  = rhs.size_;
     dimension_ = rhs.dimension_;
 }
@@ -88,7 +110,9 @@ KDTree<N, ElemType>::KDTree(const KDTree &rhs)
 template <size_t N, typename ElemType>
 KDTree<N, ElemType> &KDTree<N, ElemType>::operator=(const KDTree &rhs)
 {
-    root = rhs.root;
+    if(root)
+    {borrado(root);root = 0;}
+    insertar(rhs.root);
     size_ = rhs.size_;
     dimension_ = rhs.dimension_;
   return *this;
@@ -177,11 +201,20 @@ const ElemType &KDTree<N, ElemType>::at(const Point<N> &pt) const
     return (*p)->valor;
 }
 
+template<size_t N,typename ElemType>
+void KDTree<N,ElemType>::CompararTodos(KdNode<N,ElemType> *p,std::vector<std::pair<double,ElemType>>&x,const Point<N> &key)const
+{
+    if(!p) return;
+    x.push_back(std::make_pair(distance(p->punto,key),p->valor));
+    CompararTodos(p->hijos[0],x,key);
+    CompararTodos(p->hijos[1],x,key);
+}
 template <size_t N, typename ElemType>
 ElemType KDTree<N, ElemType>::knn_value(const Point<N> &key, size_t k) const
 {
   ElemType new_element;
-    
+std:std::vector<ElemType> knn;
+  knn = knn_query(key,k);
   return new_element;
 }
 
@@ -190,9 +223,30 @@ std::vector<ElemType> KDTree<N, ElemType>::knn_query(const Point<N> &key,
                                                      size_t k) const
 {
   std::vector<ElemType> values;
-    KdNode<N,ElemType> **p;
-    p = &root;
-    
+    //Da error, por ende no funciona; es lo que trate de hacer.
+  /*std::vector<std::pair<double,ElemType>> Nodos;
+    std::vector<KdNode<N,ElemType>*> KMejores;
+  double mejor_distancia=std::numeric_limits<double>::infinity();
+  KdNode<N,ElemType> *p;
+  ElemType q;
+  p = root;
+  CompararTodos(p,Nodos,key);
+    int cont = 0;
+    for(int j = 0;j<k;j++)
+    {
+        for(int i = 0;i<Nodos.size();i++)
+        {
+            if(mejor_distancia > Nodos[i].second)
+            {
+                mejor_distancia = Nodos[i].second;
+                cont = i;
+                q = Nodos[i].first;
+                std::cout<<q<<std::endl;
+            }
+        }
+        values.push_back(q);
+        Nodos.erase(Nodos.begin()+cont);
+    }*/
   return values;
 }
 

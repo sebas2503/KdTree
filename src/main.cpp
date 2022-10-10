@@ -611,7 +611,6 @@ void test_moderate_copy() try {
 }
 
 int main() {
-    std::cout<<"hola buenas tardes";
   test_basic_kd_tree();
   test_moderate_kd_tree();
   test_harder_kd_tree();
